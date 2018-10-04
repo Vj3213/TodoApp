@@ -9,6 +9,8 @@ import {
   Dimensions,
   TouchableOpacity
 } from "react-native";
+import { connect } from "react-redux";
+import { removeTodo, updateTodo } from "../actions/todo";
 
 let screenWidth = Dimensions.get("window").width;
 let itemBoxHeight = Dimensions.get("window").height / 15;
@@ -19,47 +21,26 @@ function filter(data, visibilityFilter) {
       return data;
 
     case "ACTIVE":
-      i = 0;
-      while (i < data.length) {
-        if (data[i].isCompleted) {
-          data.splice(i, 1);
-        } else {
-          i++;
-        }
-      }
-      return data;
+      return data.filter(item => !item.isCompleted);
 
     case "COMPLETED":
-      i = 0;
-      while (i < data.length) {
-        if (!data[i].isCompleted) {
-          data.splice(i, 1);
-        } else {
-          i++;
-        }
-      }
-      return data;
+      return data.filter(item => item.isCompleted);
 
     default:
-      return [];
+      return data;
   }
 }
 
-function onCheckboxClicked(item) {
-  onCheckboxClicked(item);
-}
+function ItemList(props) {
+  const data = filter(props.itemList, props.visibilityFilter);
 
-function onDelete(item) {
-  onDelete(item);
-}
+  function onDelete(item) {
+    props.onDelete(item.key);
+  }
 
-export default function ItemList({
-  itemList,
-  visibilityFilter,
-  onDelete,
-  onCheckboxClicked
-}) {
-  const data = filter(itemList, visibilityFilter);
+  function onCheckboxClicked(item) {
+    props.onUpdate(item);
+  }
 
   return (
     <FlatList
@@ -113,3 +94,22 @@ const styles = StyleSheet.create({
     height: 18
   }
 });
+
+const mapStateToProps = state => {
+  return {
+    itemList: state.todos.itemList,
+    visibilityFilter: state.visibilityFilter.visibilityFilter
+  };
+};
+
+const mapDispatchToProps = dispatch => {
+  return {
+    onDelete: key => dispatch(removeTodo(key)),
+    onUpdate: item => dispatch(updateTodo(item))
+  };
+};
+
+export default connect(
+  mapStateToProps,
+  mapDispatchToProps
+)(ItemList);

@@ -2,12 +2,14 @@ import React, { Component } from "react";
 import { View, TextInput, Text, StyleSheet, Dimensions } from "react-native";
 import ItemList from "./components/itemList";
 import VisibilityFilter from "./components/visibilityFilter";
+import { addTodo } from "./actions/todo";
+import { connect } from "react-redux";
 
 let screenHeight = Dimensions.get("window").height;
 let inputBoxHeight = screenHeight / 12;
 let textSize = inputBoxHeight / 2;
 
-export default class App extends Component {
+class App extends Component {
   constructor(props) {
     super(props);
     this.state = {
@@ -26,43 +28,10 @@ export default class App extends Component {
   addItem = () => {
     let date = new Date();
     let key = date.getTime().toString();
+    this.props.onAdd({ key: key, value: this.state.newItem });
     this.setState({
-      itemList: [
-        ...this.state.itemList,
-        {
-          key: key,
-          value: this.state.newItem,
-          isCompleted: false,
-          visibilityFilter: "ALL"
-        }
-      ],
       newItem: ""
     });
-  };
-
-  updateItemList = oldItem => {
-    let newItemList = [...this.state.itemList];
-    newItemList.map((newItem, index) => {
-      if (newItem.key === oldItem.key) {
-        newItemList[index] = {
-          key: oldItem.key,
-          value: oldItem.value,
-          isCompleted: true,
-          visibilityFilter: "ALL"
-        };
-      }
-    });
-    this.setState({ itemList: newItemList });
-  };
-
-  onDelete = oldItem => {
-    let newItemList = [...this.state.itemList];
-    newItemList.map((item, index) => {
-      if (item.key === oldItem.key) {
-        newItemList.splice(index, 1);
-      }
-    });
-    this.setState({ itemList: newItemList });
   };
 
   onSelection = visibilityFilter => {
@@ -92,21 +61,19 @@ export default class App extends Component {
           value={this.state.newItem}
         />
 
-        <VisibilityFilter
-          numberOfItems={this.state.itemList.length}
-          onSelection={this.onSelection}
-        />
+        <VisibilityFilter numberOfItems={this.state.itemList.length} />
 
-        <ItemList
-          visibilityFilter={this.state.visibilityFilter}
-          itemList={[...this.state.itemList]}
-          onDelete={this.onDelete}
-          onCheckboxClicked={this.updateItemList}
-        />
+        <ItemList />
       </View>
     );
   }
 }
+
+const mapDispatchToProps = dispatch => {
+  return {
+    onAdd: data => dispatch(addTodo(data))
+  };
+};
 
 const styles = StyleSheet.create({
   container: {
@@ -121,3 +88,8 @@ const styles = StyleSheet.create({
     fontSize: textSize
   }
 });
+
+export default connect(
+  null,
+  mapDispatchToProps
+)(App);

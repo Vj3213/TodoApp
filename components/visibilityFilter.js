@@ -1,12 +1,15 @@
 import React from "react";
 import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
+import { connect } from "react-redux";
+import onVisibilityFilterSelected from "../actions/visibilityFilter";
+import { onClearCompleted } from "../actions/todo";
 
-let selectedFilter = "ALL";
+function VisibilityFilter(props) {
+  let selectedFilter = props.visibilityFilter;
 
-export default function VisibilityFilter(props) {
   onSelection = visibilityFilter => {
     selectedFilter = visibilityFilter;
-    props.onSelection(visibilityFilter);
+    props.onVisibilityFilterSelected(visibilityFilter);
   };
 
   return (
@@ -33,7 +36,7 @@ export default function VisibilityFilter(props) {
         )) || <Text style={styles.text}>Completed</Text>}
       </TouchableOpacity>
 
-      <TouchableOpacity onPress={() => this.onSelection("CLEAR_COMPLETED")}>
+      <TouchableOpacity onPress={() => props.onClearCompleted()}>
         {(selectedFilter == "CLEAR_COMPLETED" && (
           <Text style={[styles.text, styles.elementBorder]}>
             Clear-Completed
@@ -65,3 +68,23 @@ const styles = StyleSheet.create({
     padding: 2
   }
 });
+
+const mapDispatchToProps = dispatch => {
+  return {
+    onVisibilityFilterSelected: visibilityFilter =>
+      dispatch(onVisibilityFilterSelected(visibilityFilter)),
+
+    onClearCompleted: () => dispatch(onClearCompleted())
+  };
+};
+
+const mapStateToProps = state => {
+  return {
+    visibilityFilter: state.visibilityFilter.visibilityFilter
+  };
+};
+
+export default connect(
+  mapStateToProps,
+  mapDispatchToProps
+)(VisibilityFilter);
